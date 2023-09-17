@@ -16,7 +16,7 @@ const { OpenAI } = require("openai");
 const fs = require("fs");
 
 const openai = new OpenAI({
-  apiKey: "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",
+  apiKey: fs.readFileSync("openai-key.txt", "utf8"),
 });
 
 const policies = fs.readFileSync("output.txt", "utf8");
@@ -41,6 +41,7 @@ app.get('/', (req, res) => {
   res.render('index.ejs', { imageFileName });
 });
 // =========================== SOCKET.IO ================================ //
+let isPlaying = false;
 
 io.on("connection", function (client) {
   console.log("Client Connected to server");
@@ -66,6 +67,13 @@ io.on("connection", function (client) {
     // console.log(data); //log binary data
     if (recognizeStream !== null) {
       recognizeStream.write(data);
+    }
+  });
+
+  client.on("toPlayAudio", function (message) {
+    if (message === "finished") {
+      console.log("finished playing audio");
+      isPlaying = false;
     }
   });
 
@@ -106,11 +114,11 @@ io.on("connection", function (client) {
           });
 
           let counter = 0;
-          let chunkNum = 0;
           let text = "";
           for await (const chunk of completion) {
             let content = chunk.choices[0].delta.content;
             if (content == "undefined") {
+              console.log("undefined");
               continue;
             }
             text += content;
@@ -118,9 +126,13 @@ io.on("connection", function (client) {
 
             if (counter == 25) {
               // 25 tokens per "query"
-              chunkNum += 1;
-              console.log(`${chunkNum}: ${text}`);
               // send this to the client to play as audio file.
+              while (isPlaying) {
+                console.log("waiting for audio to finish");
+                await new Promise((resolve) => setTimeout(resolve, 100));
+              }
+              console.log(text);
+              text = text.replace("undefined", "");
               sendElevenLabsMessage(text + " ");
               counter = 0;
               text = "";
@@ -154,11 +166,12 @@ io.on("connection", function (client) {
   // import WebSocket
   const WebSocket = require("ws");
 
-  const voiceId = "XB0fDUnXU5powFXDhCwa"; // replace with your voice_id
+  const voiceId = "jsCqWAovK2LkecY7zXl4"; // replace with your voice_id
   const model = "eleven_monolingual_v1";
   const wsUrl = `wss://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream-input?model_id=${model}`;
 
   function sendElevenLabsMessage(text) {
+    isPlaying = true;
     const socket = new WebSocket(wsUrl);
 
     // 2. Initialize the connection by sending the BOS message
@@ -169,7 +182,7 @@ io.on("connection", function (client) {
           stability: 0.5,
           similarity_boost: true,
         },
-        xi_api_key: "b01180d03826fd196b7d17840d25f1d8", // replace with your API key
+        xi_api_key: fs.readFileSync("elevenlabs-key.txt", "utf8"),
       };
 
       socket.send(JSON.stringify(bosMessage));

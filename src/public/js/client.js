@@ -198,6 +198,7 @@ async function playAudioBase64(audioBase64) {
   const audioElement = document.createElement("audio");
   audioElement.src = audioUrl;
   await audioElement.play();
+  endButton.click();
   isAudioPlaying = true;
   audioElement.onended = async function () {
     // if there's more audio to play, play it
@@ -205,7 +206,9 @@ async function playAudioBase64(audioBase64) {
       let audioBase64 = audioQueue.shift();
       await playAudioBase64(audioBase64);
     } else {
+      console.log("finished playing audio");
       isAudioPlaying = false;
+      socket.emit("toPlayAudio", "finished");
     }
   };
 }
