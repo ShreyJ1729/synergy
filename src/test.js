@@ -10,6 +10,7 @@ if (!fs.existsSync(folderPath)) {
 
 const connectionString =
   "mongodb+srv://prakulSynergyDB:SynergyDBPassword@cluster0.a1krduw.mongodb.net/HMReturnPolicy";
+  //No network access now!
 
 mongoose
   .connect(connectionString, {
