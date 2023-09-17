@@ -9,3 +9,5 @@ srcLogOnly/config.codekit3
 .DS_Store
 *.json
 srcLogOnly/node_modules
+openai-key.txt
+elevenlabs-key.txt
