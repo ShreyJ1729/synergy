@@ -206,27 +206,26 @@ async function playAudioBase64(audioBase64) {
       await playAudioBase64(audioBase64);
     } else {
       isAudioPlaying = false;
+      audioQueue = [];
       socket.emit("toPlayAudio", "finished");
     }
   };
 }
 
 socket.on("toPlayAudio", async function (audioBase64) {
-  if (audioBase64 == null) {
-    // play the audio
-    if (audioQueue.length > 0) {
-      let audioBase64 = audioQueue.shift();
-      await playAudioBase64(audioBase64);
-    }
-    return;
-  }
-
+  if (audioBase64 == null) return;
+  // play the audio
+  audioQueue.push(audioBase64);
   console.log(
     "collected audio data to play... buffer length:",
     audioBase64.length
   );
 
-  audioQueue.push(audioBase64);
+  if (audioQueue.length > 0 && !isAudioPlaying) {
+    let audioBase64 = audioQueue.shift();
+    await playAudioBase64(audioBase64);
+  }
+  // }
 });
 
 //================= Juggling Spans for nlp Coloring =================
