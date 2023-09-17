@@ -12,6 +12,14 @@ const port = process.env.PORT || 1337;
 const server = require("http").createServer(app);
 
 const io = require("socket.io")(server);
+const { OpenAI } = require("openai");
+const fs = require("fs");
+
+const openai = new OpenAI({
+  apiKey: "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",
+});
+
+const policies = fs.readFileSync("output.txt", "utf8");
 
 app.use("/assets", express.static(__dirname + "/public"));
 app.use("/session/assets", express.static(__dirname + "/public"));
@@ -60,7 +68,7 @@ io.on("connection", function (client) {
     recognizeStream = speechClient
       .streamingRecognize(request)
       .on("error", console.error)
-      .on("data", (data) => {
+      .on("data", async (data) => {
         process.stdout.write(
           data.results[0] && data.results[0].alternatives[0]
             ? `Transcription: ${data.results[0].alternatives[0].transcript}\n`
@@ -75,14 +83,48 @@ io.on("connection", function (client) {
           data.results[0].isFinal &&
           data.results[0].alternatives[0]
         ) {
-          process.stdout.write(
-            "sending to elevenlabs: " +
-              data.results[0].alternatives[0].transcript +
-              " "
-          );
-          sendElevenLabsMessage(
-            data.results[0].alternatives[0].transcript + " "
-          );
+          let user_question = data.results[0].alternatives[0].transcript + " ";
+          // send the user question to GPT
+          process.stdout.write("sending to gpt: " + user_question);
+
+          const completion = await openai.chat.completions.create({
+            model: "gpt-3.5-turbo",
+            messages: [
+              { role: "system", content: policies },
+              {
+                role: "user",
+                content: user_question,
+              },
+            ],
+            stream: true,
+            max_tokens: 150,
+          });
+
+          let counter = 0;
+          let chunkNum = 0;
+          let text = "";
+          for await (const chunk of completion) {
+            let content = chunk.choices[0].delta.content;
+            if (content == "undefined") {
+              continue;
+            }
+            text += content;
+            counter += 1;
+
+            if (counter == 25) {
+              // 25 tokens per "query"
+              chunkNum += 1;
+              console.log(`${chunkNum}: ${text}`);
+              // send this to the client to play as audio file.
+              sendElevenLabsMessage(text + " ");
+              counter = 0;
+              text = "";
+            }
+          }
+
+          // sendElevenLabsMessage(
+          //   data.results[0].alternatives[0].transcript + " "
+          // );
         }
 
         // if end of utterance, let's restart stream
