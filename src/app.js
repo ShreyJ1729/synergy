@@ -22,6 +22,7 @@ const openai = new OpenAI({
 const policies = fs.readFileSync("output.txt", "utf8");
 
 app.use("/assets", express.static(__dirname + "/public"));
+app.use(express.static('public'));
 app.use("/session/assets", express.static(__dirname + "/public"));
 app.set("view engine", "ejs");
 
@@ -35,6 +36,10 @@ app.use("/", function (req, res, next) {
   next(); // console.log(`Request Url: ${req.url}`);
 });
 
+app.get('/', (req, res) => {
+  const imageFileName = 'logo.jpg'; // Replace with your image file name or path
+  res.render('index.ejs', { imageFileName });
+});
 // =========================== SOCKET.IO ================================ //
 
 io.on("connection", function (client) {

@@ -1,6 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 body {
     font-family: sans-serif;
-    background-color: rgb(189, 189, 189);
+    background-color: #ecf0f3;
 }
 
 p {
@@ -24,12 +28,16 @@ a:hover {
 audio {
     width: 300px;
     height: auto;
-    backgorund-color: red;
+    background-color: red;
 }
 
 .wrapper {
-    width: 90vw;
-    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    width: 100vw;
+    height: 100vh;
 }
 
 .greyText {
@@ -51,23 +59,78 @@ audio {
   }
 }
 #recordingStatus {
-  display: inline-block;
+  display: flex;
+  align-items: center;
   width: 18px;
   height: 18px;
   border-radius: 20px;
+  margin-top: 10px;
   visibility: hidden;
   -webkit-animation-name: redGlow;
   -webkit-animation-duration: 2s;
   -webkit-animation-iteration-count: infinite;
 }
 
-#ResultText {
-    width: 80vw;
+
+.description {
+    font-size: 18px;
+    margin: 20px 0;
 }
 
-#ResultText span {
-    display: inline-block;
+.buttons {
+    display: flex;
+    align-items: center;
+    margin-top: 100px;
+}
+.button {
+    background-color: #d0bdbd;
+    color: #aa5656;
+    border: 1px solid #aa5656;
+    border-radius: 10%;
+    width: 50px;    
+    height: 35px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
     margin-top: 10px;
+    margin-right: 10px;
+}
+
+#stopRecButton {
+    width: auto
+}
+
+.button:hover {
+    scale: 110%;
+}
+
+.mic-icon::before {
+    content: "\f130"; /* Microphone icon or any other icon you prefer */
+    font-family: FontAwesome; /* Assuming you're using FontAwesome for icons */
+}
+
+.pulse-animation {
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.5);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+#Logo {
+    display:inline;
+    position: relative;
+    /* margin-left: 50vw;
+    margin-top: 15px; */
+    
 }
 
 #sessionSpeechData {
