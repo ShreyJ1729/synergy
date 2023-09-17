@@ -36,6 +36,7 @@ app.use("/", function (req, res, next) {
 });
 
 // =========================== SOCKET.IO ================================ //
+let isPlaying = false;
 
 io.on("connection", function (client) {
   console.log("Client Connected to server");
@@ -61,6 +62,12 @@ io.on("connection", function (client) {
     // console.log(data); //log binary data
     if (recognizeStream !== null) {
       recognizeStream.write(data);
+    }
+  });
+
+  client.on("toPlayAudio", function (message) {
+    if (message === "finished") {
+      isPlaying = false;
     }
   });
 
@@ -101,7 +108,6 @@ io.on("connection", function (client) {
           });
 
           let counter = 0;
-          let chunkNum = 0;
           let text = "";
           for await (const chunk of completion) {
             let content = chunk.choices[0].delta.content;
@@ -113,9 +119,10 @@ io.on("connection", function (client) {
 
             if (counter == 25) {
               // 25 tokens per "query"
-              chunkNum += 1;
-              console.log(`${chunkNum}: ${text}`);
               // send this to the client to play as audio file.
+              while (isPlaying) {
+                await new Promise((resolve) => setTimeout(resolve, 100));
+              }
               sendElevenLabsMessage(text + " ");
               counter = 0;
               text = "";
@@ -154,6 +161,7 @@ io.on("connection", function (client) {
   const wsUrl = `wss://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream-input?model_id=${model}`;
 
   function sendElevenLabsMessage(text) {
+    isPlaying = true;
     const socket = new WebSocket(wsUrl);
 
     // 2. Initialize the connection by sending the BOS message

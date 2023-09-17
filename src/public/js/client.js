@@ -206,6 +206,7 @@ async function playAudioBase64(audioBase64) {
       await playAudioBase64(audioBase64);
     } else {
       isAudioPlaying = false;
+      socket.emit("toPlayAudio", "finished");
     }
   };
 }
