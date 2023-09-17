@@ -16,7 +16,7 @@ const { OpenAI } = require("openai");
 const fs = require("fs");
 
 const openai = new OpenAI({
-  apiKey: "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",
+  apiKey: fs.readFileSync("openai-key.txt", "utf8"),
 });
 
 const policies = fs.readFileSync("output.txt", "utf8");
@@ -126,6 +126,8 @@ io.on("connection", function (client) {
                 console.log("waiting for audio to finish");
                 await new Promise((resolve) => setTimeout(resolve, 100));
               }
+              console.log(text);
+              text = text.replace("undefined", "");
               sendElevenLabsMessage(text + " ");
               counter = 0;
               text = "";
@@ -159,7 +161,7 @@ io.on("connection", function (client) {
   // import WebSocket
   const WebSocket = require("ws");
 
-  const voiceId = "XB0fDUnXU5powFXDhCwa"; // replace with your voice_id
+  const voiceId = "jsCqWAovK2LkecY7zXl4"; // replace with your voice_id
   const model = "eleven_monolingual_v1";
   const wsUrl = `wss://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream-input?model_id=${model}`;
 
@@ -175,7 +177,7 @@ io.on("connection", function (client) {
           stability: 0.5,
           similarity_boost: true,
         },
-        xi_api_key: "b01180d03826fd196b7d17840d25f1d8", // replace with your API key
+        xi_api_key: fs.readFileSync("elevenlabs-key.txt", "utf8"),
       };
 
       socket.send(JSON.stringify(bosMessage));
