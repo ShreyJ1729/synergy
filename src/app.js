@@ -67,6 +67,7 @@ io.on("connection", function (client) {
 
   client.on("toPlayAudio", function (message) {
     if (message === "finished") {
+      console.log("finished playing audio");
       isPlaying = false;
     }
   });
@@ -112,6 +113,7 @@ io.on("connection", function (client) {
           for await (const chunk of completion) {
             let content = chunk.choices[0].delta.content;
             if (content == "undefined") {
+              console.log("undefined");
               continue;
             }
             text += content;
@@ -121,6 +123,7 @@ io.on("connection", function (client) {
               // 25 tokens per "query"
               // send this to the client to play as audio file.
               while (isPlaying) {
+                console.log("waiting for audio to finish");
                 await new Promise((resolve) => setTimeout(resolve, 100));
               }
               sendElevenLabsMessage(text + " ");
